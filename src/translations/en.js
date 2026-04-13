@@ -14,6 +14,12 @@ export const en = {
         backupDesc: "Backup your data or restore from a file",
         deleteDesc: "Permanently delete your account and all data",
         save: "Save Changes",
+        storageSafety: "Storage Safety",
+        storageStatusSafe: "Your storage is marked as Persistent. Data will not be deleted automatically.",
+        storageStatusBestEffort: "Your storage is currently managed by the browser. It might be cleared if your device runs out of space.",
+        storageUsage: "Used",
+        storageQuota: "Limit",
+        requestPersistence: "Protect Local Data",
     },
     common: {
         loading: "Loading...",

@@ -14,6 +14,12 @@ export const hi = {
         backupDesc: "अपने डेटा का बैकअप लें या फ़ाइल से पुनर्स्थापित करें",
         deleteDesc: "अपने खाते और सभी डेटा को स्थायी रूप से हटाएं",
         save: "बदलाव सेव करें",
+        storageSafety: "डेटा सुरक्षा",
+        storageStatusSafe: "आपका डेटा सुरक्षित है। यह अपने आप नहीं हटेगा।",
+        storageStatusBestEffort: "आपका डेटा ब्राउज़र द्वारा प्रबंधित है। जगह कम होने पर यह हटाया जा सकता है।",
+        storageUsage: "उपयोग",
+        storageQuota: "सीमा",
+        requestPersistence: "डेटा सुरक्षित करें",
     },
     common: {
         loading: "लोड हो रहा है...",

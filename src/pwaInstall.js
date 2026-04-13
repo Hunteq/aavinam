@@ -8,6 +8,7 @@
  *  3. Expose triggerSkipWaiting() for the UpdatePrompt component
  *  4. Capture beforeinstallprompt → store + dispatch 'pwa-install-available'
  *  5. Listen for appinstalled → dispatch 'pwa-installed'
+ *  6. Request persistent storage to prevent automatic data deletion
  * ============================================================
  */
 
@@ -127,8 +128,49 @@ function setupInstallPrompt() {
     });
 }
 
+/**
+ * Request persistent storage from the browser.
+ * This prevents IndexedDB, LocalStorage, and Cache data from being 
+ * automatically cleared when disk space is low.
+ */
+async function requestStoragePersistence() {
+    if (navigator.storage && navigator.storage.persist) {
+        try {
+            // First check if already persisted
+            const isPersisted = await navigator.storage.persisted();
+            if (isPersisted) {
+                console.log('[Storage] Already marked as persistent');
+                return;
+            }
+
+            // Request persistence
+            const granted = await navigator.storage.persist();
+            if (granted) {
+                console.log('[Storage] Persistent storage granted by browser');
+            } else {
+                console.warn('[Storage] Persistent storage NOT granted. Data might be cleared if disk is low.');
+                
+                // Note: Most browsers only grant this if the app is "installed" (PWA) 
+                // or after user engagement. Browsers like Chrome grant it automatically 
+                // if the app is installed.
+            }
+
+            // Log current quota for debugging
+            if (navigator.storage.estimate) {
+                const { usage, quota } = await navigator.storage.estimate();
+                const usageMB = (usage / (1024 * 1024)).toFixed(2);
+                const quotaMB = (quota / (1024 * 1024)).toFixed(2);
+                console.log(`[Storage] Usage: ${usageMB} MB / ${quotaMB} MB`);
+            }
+        } catch (err) {
+            console.error('[Storage] Error requesting persistence:', err);
+        }
+    }
+}
+
 // ── Bootstrap on page load ─────────────────────────────────────
 window.addEventListener('load', () => {
     registerServiceWorker();
     setupInstallPrompt();
+    requestStoragePersistence();
 });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useBranch } from '../context/BranchContext';
 import { db, exportDatabase, importDatabase } from '../db/db';
-import { Save, Globe, Lock, User, Download, Upload, CheckCircle, Building2, ClipboardList, Trash2 } from 'lucide-react';
+import { Save, Globe, Lock, User, Download, Upload, CheckCircle, Building2, ClipboardList, Trash2, ShieldCheck, Database } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
 import DeleteAccountModal from '../components/DeleteAccountModal';
@@ -24,10 +24,41 @@ const Profile = () => {
     const [showStatus, setShowStatus] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isStoragePersisted, setIsStoragePersisted] = useState(false);
+    const [storageEstimate, setStorageEstimate] = useState({ usage: 0, quota: 0 });
 
     useEffect(() => {
         loadData();
+        checkStorageStatus();
     }, [currentBranch]);
+
+    const checkStorageStatus = async () => {
+        if (navigator.storage) {
+            if (navigator.storage.persisted) {
+                const persisted = await navigator.storage.persisted();
+                setIsStoragePersisted(persisted);
+            }
+            if (navigator.storage.estimate) {
+                const estimate = await navigator.storage.estimate();
+                setStorageEstimate({
+                    usage: estimate.usage || 0,
+                    quota: estimate.quota || 0
+                });
+            }
+        }
+    };
+
+    const handleRequestPersistence = async () => {
+        if (navigator.storage && navigator.storage.persist) {
+            const granted = await navigator.storage.persist();
+            setIsStoragePersisted(granted);
+            if (granted) {
+                alert('Success! Persistent storage has been granted. Your data is now extra safe from automatic deletion.');
+            } else {
+                alert('The browser could not grant persistent storage at this moment. This usually happens if the app is not "Installed" as a PWA. Please try installing the app first.');
+            }
+        }
+    };
 
     const loadData = async () => {
         const globalSettings = await db.settings.get('global');
@@ -236,6 +267,43 @@ const Profile = () => {
                                     ))}
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="card">
+                            <div className="card-header-flex">
+                                <ShieldCheck size={24} color="#10b981" />
+                                <h3>{t('settings.storageSafety') || 'Storage Safety'}</h3>
+                            </div>
+                            <p className="desc">
+                                {isStoragePersisted 
+                                    ? (t('settings.storageStatusSafe') || 'Your storage is marked as Persistent. Data will not be deleted automatically.')
+                                    : (t('settings.storageStatusBestEffort') || 'Your storage is currently managed by the browser. It might be cleared if your device runs out of space.')}
+                            </p>
+                            
+                            <div className="storage-info" style={{ marginTop: '16px', fontSize: '0.85rem', color: '#64748b' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                    <span>{t('settings.storageUsage') || 'Used'}: {(storageEstimate.usage / (1024 * 1024)).toFixed(1)} MB</span>
+                                    <span>{t('settings.storageQuota') || 'Limit'}: {(storageEstimate.quota / (1024 * 1024)).toFixed(1)} MB</span>
+                                </div>
+                                <div style={{ height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                                    <div style={{ 
+                                        height: '100%', 
+                                        width: `${Math.min(100, (storageEstimate.usage / (storageEstimate.quota || 1)) * 100)}%`, 
+                                        background: 'var(--primary)',
+                                        transition: 'width 0.3s'
+                                    }}></div>
+                                </div>
+                            </div>
+
+                            {!isStoragePersisted && (
+                                <button 
+                                    className="btn btn-secondary btn-sm" 
+                                    onClick={handleRequestPersistence}
+                                    style={{ marginTop: '16px', width: '100%', justifyContent: 'center' }}
+                                >
+                                    <Database size={16} /> {t('settings.requestPersistence') || 'Protect Local Data'}
+                                </button>
+                            )}
                         </div>
 
                         <div className="card">
