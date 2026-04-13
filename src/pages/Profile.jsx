@@ -60,6 +60,13 @@ const Profile = () => {
         }
     };
 
+    const formatStorage = (bytes) => {
+        if (!bytes) return '0 MB';
+        const gb = bytes / (1024 * 1024 * 1024);
+        if (gb >= 1) return `${gb.toFixed(1)} GB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
     const loadData = async () => {
         const globalSettings = await db.settings.get('global');
 
@@ -282,8 +289,8 @@ const Profile = () => {
                             
                             <div className="storage-info" style={{ marginTop: '16px', fontSize: '0.85rem', color: '#64748b' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                    <span>{t('settings.storageUsage') || 'Used'}: {(storageEstimate.usage / (1024 * 1024)).toFixed(1)} MB</span>
-                                    <span>{t('settings.storageQuota') || 'Limit'}: {(storageEstimate.quota / (1024 * 1024)).toFixed(1)} MB</span>
+                                    <span>{t('settings.storageUsage') || 'Used'}: {formatStorage(storageEstimate.usage)}</span>
+                                    <span>{t('settings.storageQuota') || 'Limit'}: {formatStorage(storageEstimate.quota)}</span>
                                 </div>
                                 <div style={{ height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
                                     <div style={{ 
